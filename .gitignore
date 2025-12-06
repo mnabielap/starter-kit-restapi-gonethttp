@@ -1,0 +1,66 @@
+# Binaries
+# ---------------------
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+bin/
+main
+
+# Project specific binary name (if built)
+starter-kit-restapi-gonethttp
+
+# Go workspace
+# ---------------------
+go.work
+go.work.sum
+
+# Vendor directory (uncomment if you don't want to commit dependencies)
+# vendor/
+
+# Test coverage
+# ---------------------
+coverage.out
+coverage.html
+*.out
+
+# Environment Variables
+# ---------------------
+.env
+.env.local
+.env.*.local
+
+# Database (SQLite)
+# ---------------------
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Logs
+# ---------------------
+*.log
+
+# OS Specific
+# ---------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE / Editors
+# ---------------------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+**/__pycache__
+
+**api_tests/*.json
