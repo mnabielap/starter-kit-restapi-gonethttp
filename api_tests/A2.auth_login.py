@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 import utils
 
-email = utils.load_config("user_email") or "admin@example.com"
+email = "admin@example.com"
 password = "password123"
 
 payload = {

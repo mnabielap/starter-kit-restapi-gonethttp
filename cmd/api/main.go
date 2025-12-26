@@ -32,7 +32,7 @@ func main() {
 	authHandler := handlers.NewAuthHandler(authService)
 	userHandler := handlers.NewUserHandler(userService)
 
-	router := routes.RegisterRoutes(cfg, authHandler, userHandler)
+	router := routes.RegisterRoutes(cfg, authHandler, userHandler, userService)
 
 	serverAddr := fmt.Sprintf(":%s", cfg.Port)
 	logger.Log.Info("Server listening", "address", serverAddr)

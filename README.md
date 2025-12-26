@@ -15,6 +15,7 @@ This project is designed as a high-performance alternative to Express.js boilerp
 - **🏗 Standard Go Layout**: Clean separation of concerns (`cmd`, `internal`, `pkg`).
 - **💾 Dual Database Support**: Seamlessly switch between **SQLite** (Pure Go, CGO-free) and **PostgreSQL**.
 - **🔐 Authentication**: Robust JWT implementation (Access & Refresh Tokens).
+- **👮 Authorization (RBAC)**: Role-Based Access Control ensuring only Admins can manage users.
 - **🛡 Security**: Password hashing (Bcrypt) and API Rate Limiting.
 - **📝 Logging**: Structured logging using Go's `log/slog`.
 - **🐳 Docker Ready**: Multi-stage builds with Alpine Linux for tiny images.
@@ -32,7 +33,7 @@ starter-kit-restapi-gonethttp/
 ├── config/                # Environment and DB configuration
 ├── internal/
 │   ├── handlers/          # HTTP Controllers (Transport Layer)
-│   ├── middleware/        # Auth, Logger, Rate Limiter
+│   ├── middleware/        # Auth, Logger, Rate Limiter, Roles
 │   ├── models/            # GORM Structs (Database Models)
 │   ├── repository/        # Data Access Layer (SQL Queries)
 │   ├── routes/            # Route definitions
@@ -80,7 +81,7 @@ JWT_SECRET=change_this_to_something_secure
 
 ## 🏃‍♂️ Getting Started (Local Development)
 
-We recommended running the project locally first to understand how it works.
+We recommend running the project locally first to understand how it works.
 
 ### Prerequisites
 - **Go** (version 1.22 or higher)
@@ -236,6 +237,7 @@ python api_tests/A1.auth_register.py
 ```bash
 python api_tests/A2.auth_login.py
 ```
+*Note: Ensure you login as an **Admin** to perform User Management tests (B series).*
 
 **3. Get Users List (Pagination):**
 ```bash
