@@ -41,20 +41,29 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 // Implemented GetUsers with Query Params
 func (h *UserHandler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
-	
+
 	page, _ := strconv.Atoi(query.Get("page"))
-	if page == 0 { page = 1 }
-	
+	if page < 1 {
+		page = 1
+	}
+
 	limit, _ := strconv.Atoi(query.Get("limit"))
-	if limit == 0 { limit = 10 }
-	
+	if limit < 1 {
+		limit = 10
+	}
+
+	// Extract Sort Param (e.g., "created_at:desc")
 	sortBy := query.Get("sortBy")
-	name := query.Get("name")
+
+	// Extract Search Params
+	search := query.Get("search")
+	scope := query.Get("scope")
 	role := query.Get("role")
 
 	filters := map[string]interface{}{
-		"name": name,
-		"role": role,
+		"search": search,
+		"scope":  scope,
+		"role":   role,
 	}
 
 	result, err := h.service.GetUsers(filters, page, limit, sortBy)

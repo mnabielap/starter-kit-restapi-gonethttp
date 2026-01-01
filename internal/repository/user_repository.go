@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"strings"
 
 	"starter-kit-restapi-gonethttp/internal/models"
@@ -40,32 +41,87 @@ func (r *userRepository) FindByID(id uuid.UUID) (*models.User, error) {
 	return &user, nil
 }
 
-// Implemented FindAll with pagination and filtering
 func (r *userRepository) FindAll(filters map[string]interface{}, pagination *utils.PaginationScope) ([]models.User, int64, error) {
 	var users []models.User
 	var totalRows int64
 
 	query := r.db.Model(&models.User{})
 
-	// Apply Filters
-	if name, ok := filters["name"].(string); ok && name != "" {
-		query = query.Where("lower(name) LIKE ?", "%"+strings.ToLower(name)+"%")
+	// --- 1. SEARCH LOGIC ---
+	if search, ok := filters["search"].(string); ok && search != "" {
+		scope, _ := filters["scope"].(string)
+		searchPattern := "%" + strings.ToLower(search) + "%"
+
+		switch scope {
+		case "name":
+			query = query.Where("lower(name) LIKE ?", searchPattern)
+		case "email":
+			query = query.Where("lower(email) LIKE ?", searchPattern)
+		case "id":
+			// Strict ID search
+			if _, err := uuid.Parse(search); err == nil {
+				query = query.Where("id = ?", search)
+			} else {
+				// If scope is ID but invalid UUID provided, return nothing
+				query = query.Where("1 = 0")
+			}
+		case "all":
+			fallthrough
+		default:
+			// OR Logic: Name OR Email OR ID (if valid UUID)
+			subQuery := r.db.Where("lower(name) LIKE ?", searchPattern).
+				Or("lower(email) LIKE ?", searchPattern)
+
+			if _, err := uuid.Parse(search); err == nil {
+				subQuery = subQuery.Or("id = ?", search)
+			}
+			query = query.Where(subQuery)
+		}
 	}
+
+	// --- 2. FILTER LOGIC ---
 	if role, ok := filters["role"].(string); ok && role != "" {
 		query = query.Where("role = ?", role)
 	}
 
-	// Count total rows for pagination
+	// --- 3. COUNT TOTAL ---
 	query.Count(&totalRows)
 
-	// Apply Sorting
-	if pagination.Sort != "" {
-		query = query.Order(pagination.Sort)
+	// --- 4. SORTING LOGIC ---
+	// Parse "field:order" (e.g., "created_at:desc")
+	sortParam := pagination.Sort
+	orderClause := "created_at desc" // Default
+
+	if sortParam != "" {
+		parts := strings.Split(sortParam, ":")
+		field := parts[0]
+		direction := "asc"
+		if len(parts) > 1 && strings.ToLower(parts[1]) == "desc" {
+			direction = "desc"
+		}
+
+		// Whitelist allowed fields to prevent SQL injection
+		allowedFields := map[string]bool{
+			"id":         true,
+			"name":       true,
+			"email":      true,
+			"role":       true,
+			"created_at": true,
+		}
+
+		if allowedFields[field] {
+			// Standard sorting (Admin comes before User alphabetically)
+			orderClause = fmt.Sprintf("%s %s", field, direction)
+			query = query.Order(orderClause)
+		} else {
+			// Fallback if invalid field
+			query = query.Order(orderClause)
+		}
 	} else {
-		query = query.Order("created_at desc")
+		query = query.Order(orderClause)
 	}
 
-	// Apply Pagination
+	// --- 5. PAGINATION ---
 	err := query.Scopes(pagination.Paginate()).Find(&users).Error
 	return users, totalRows, err
 }

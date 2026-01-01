@@ -25,7 +25,6 @@ type AuthService interface {
 type UserService interface {
 	CreateUser(req CreateUserRequest) (*models.User, error)
 	GetUserByID(id uuid.UUID) (*models.User, error)
-	// Updated signature to match the implementation using PaginationResult
 	GetUsers(filters map[string]interface{}, page, limit int, sort string) (*utils.PaginationResult, error)
 	UpdateUser(id uuid.UUID, req UpdateUserRequest) (*models.User, error)
 	DeleteUser(id uuid.UUID) error
