@@ -1,51 +1,30 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from utils import send_and_print, BASE_URL, save_config
 
-import utils
+print("--- LOGGING IN (AS ADMIN) ---")
 
-email = "admin@example.com"
-password = "password123"
+url = f"{BASE_URL}/auth/login"
 
+# Using default admin credentials to ensure we have permissions for B* scripts
 payload = {
-    "email": email,
-    "password": password
+    "email": "admin@example.com", 
+    "password": "password123" 
 }
 
-URL = f"{utils.BASE_URL}/auth/login"
-
-print(f"--- LOGGING IN AS: {email} ---")
-
-response = utils.send_and_print(
-    url=URL,
+response = send_and_print(
+    url=url,
     method="POST",
     body=payload,
-    headers={"Content-Type": "application/json"},
     output_file=f"{os.path.splitext(os.path.basename(__file__))[0]}.json"
 )
 
 if response.status_code == 200:
     data = response.json()
-    if data:
-        target_data = data.get("results", data)
-        
-        user = target_data.get("user", {})
-        tokens = target_data.get("tokens", {})
-        
-        user_id = user.get("id")
-        access_token = tokens.get("access", {}).get("token")
-        refresh_token = tokens.get("refresh", {}).get("token")
-
-        if user_id and access_token:
-            utils.save_config("user_id", user_id)
-            utils.save_config("user_email", user.get("email"))
-            utils.save_config("access_token", access_token)
-            utils.save_config("refresh_token", refresh_token)
-            print("\n[SUCCESS] Login successful. Credentials SAVED to secrets.json")
-        else:
-            print("\n[ERROR] JSON structure recognized, but keys (id/token) missing.")
-            print(f"Debug Data: {data}")
-    else:
-        print("\n[ERROR] Empty JSON response.")
+    # Save tokens to secrets.json for subsequent requests
+    save_config("accessToken", data['tokens']['access']['token'])
+    save_config("refreshToken", data['tokens']['refresh']['token'])
+    print(">>> Login successful. Access and Refresh tokens saved.")
 else:
-    print(f"\n[ERROR] Login failed with status {response.status_code}")
+    print(">>> Login Failed.")

@@ -1,29 +1,41 @@
 import sys
 import os
+import time
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from utils import send_and_print, BASE_URL, load_config, save_config
 
-import utils
-import random
+print("--- CREATE USER (ADMIN) ---")
 
-token = utils.load_config("access_token")
-random_id = random.randint(1000, 9999)
+token = load_config("accessToken")
+if not token:
+    print("Error: No access token. Run A2.auth_login.py first.")
+    sys.exit(1)
 
+# Unique email
+unique_id = int(time.time())
+email = f"created_by_admin_{unique_id}@example.com"
+
+url = f"{BASE_URL}/users"
+headers = {
+    "Authorization": f"Bearer {token}"
+}
 payload = {
-    "name": "Created Via API",
-    "email": f"created{random_id}@example.com",
+    "name": "Created Via Python",
+    "email": email,
     "password": "password123",
     "role": "user"
 }
 
-URL = f"{utils.BASE_URL}/users"
-
-response = utils.send_and_print(
-    url=URL,
+response = send_and_print(
+    url=url,
+    headers=headers,
     method="POST",
     body=payload,
-    headers={
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {token}"
-    },
     output_file=f"{os.path.splitext(os.path.basename(__file__))[0]}.json"
 )
+
+if response.status_code == 201:
+    data = response.json()
+    # Save this ID to use in Get/Update/Delete scripts
+    save_config("target_user_id", data['id'])
+    print(f">>> User created with ID {data['id']}. ID saved to secrets.json for testing B3/B4/B5.")

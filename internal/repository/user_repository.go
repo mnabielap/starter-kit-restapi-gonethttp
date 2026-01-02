@@ -110,7 +110,7 @@ func (r *userRepository) FindAll(filters map[string]interface{}, pagination *uti
 		}
 
 		if allowedFields[field] {
-			// Standard sorting (Admin comes before User alphabetically)
+			// Standard sorting
 			orderClause = fmt.Sprintf("%s %s", field, direction)
 			query = query.Order(orderClause)
 		} else {

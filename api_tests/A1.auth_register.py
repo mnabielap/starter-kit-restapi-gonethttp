@@ -1,51 +1,34 @@
 import sys
 import os
+import time
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from utils import send_and_print, BASE_URL, save_config
 
-import utils
-import random
+# Generate a unique email to avoid conflict
+unique_id = int(time.time())
+email = f"testuser_{unique_id}@example.com"
 
-random_id = random.randint(1000, 9999)
+print(f"--- REGISTERING NEW USER: {email} ---")
+
+url = f"{BASE_URL}/auth/register"
+
 payload = {
-    "name": "New User",
-    "email": f"testuser{random_id}@example.com",
+    "name": "Test User Automator",
+    "email": email,
     "password": "password123",
-    "role": "user"
+    "role": "user",
 }
 
-URL = f"{utils.BASE_URL}/auth/register"
-
-print(f"--- REGISTERING USER: {payload['email']} ---")
-
-response = utils.send_and_print(
-    url=URL,
+response = send_and_print(
+    url=url,
     method="POST",
     body=payload,
-    headers={"Content-Type": "application/json"},
     output_file=f"{os.path.splitext(os.path.basename(__file__))[0]}.json"
 )
 
+# Optional: Save tokens if you want to use this user immediately
 if response.status_code == 201:
     data = response.json()
-    if data:
-        target_data = data.get("results", data)
-
-        user = target_data.get("user", {})
-        tokens = target_data.get("tokens", {})
-        
-        user_id = user.get("id")
-        access_token = tokens.get("access", {}).get("token")
-        refresh_token = tokens.get("refresh", {}).get("token")
-
-        if user_id and access_token:
-            utils.save_config("user_id", user_id)
-            utils.save_config("user_email", user.get("email"))
-            utils.save_config("access_token", access_token)
-            utils.save_config("refresh_token", refresh_token)
-            print("\n[SUCCESS] Credentials SAVED to secrets.json")
-        else:
-            print("\n[ERROR] Structure matches but ID or Token missing.")
-    else:
-        print("\n[ERROR] No data in response.")
-else:
-    print(f"\n[ERROR] Registration failed with status {response.status_code}")
+    save_config("accessToken", data['tokens']['access']['token'])
+    save_config("refreshToken", data['tokens']['refresh']['token'])
+    print(">>> Registration successful. Tokens saved to secrets.json.")

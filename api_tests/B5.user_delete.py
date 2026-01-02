@@ -3,7 +3,7 @@ import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 from utils import send_and_print, BASE_URL, load_config
 
-print("--- UPDATE USER ---")
+print("--- DELETE USER ---")
 
 token = load_config("accessToken")
 target_id = load_config("target_user_id")
@@ -19,14 +19,13 @@ url = f"{BASE_URL}/users/{target_id}"
 headers = {
     "Authorization": f"Bearer {token}"
 }
-payload = {
-    "name": "Updated Name via Python"
-}
 
 response = send_and_print(
     url=url,
     headers=headers,
-    method="PATCH",
-    body=payload,
+    method="DELETE",
     output_file=f"{os.path.splitext(os.path.basename(__file__))[0]}.json"
 )
+
+if response.status_code == 204:
+    print(">>> User successfully deleted.")
