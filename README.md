@@ -241,7 +241,7 @@ python api_tests/A2.auth_login.py
 
 **3. Get Users List (Pagination):**
 ```bash
-python api_tests/B2.user_get_list.py
+python api_tests/B2.user_get_all.py
 ```
 
 ---
